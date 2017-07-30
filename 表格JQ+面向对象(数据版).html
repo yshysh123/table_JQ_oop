@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+<style type="text/css">
+body,
+h1 {
+	margin: 0;
+}
+ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+input {
+	outline: none;
+}
+table {
+	border-collapse: collapse;
+	border: #bbb;
+}
+body {
+	width: 100%;
+	height: 100%;
+	/*background: url(img/2.jpg) no-repeat;*/
+}
+.tBody {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	margin-top: 30px;
+	padding: 20px 30px 40px;
+	background-color: rgba(255,255,255,.6);
+}
+.title {
+	text-align: center;
+	color: #fca113;
+	text-shadow: 0 0 2px #fcf913;
+	line-height: 50px;
+}
+table {
+	background-color: #fff;
+}
+th {
+	background-color: #ddd;
+}
+tr {
+	height: 30px;
+}
+ul {
+	padding: 5px 0;
+	width: 600px;
+	text-align: center;
+}
+td{
+	text-align: center;
+}
+td input {
+	margin: 0 2px;
+}
+li {
+	padding: 5px 0;
+	overflow: hidden;
+}
+label {
+	display: inline-block;
+}
+input[type="text"] {
+	border: 1px solid #ccc;
+	width: 80px;
+	height: 20px;
+}
+/*.active {
+	background-color: #f7cb75;
+}*/
+/*#tab tbody tr:hover {
+	background-color: #f7cb75;
+}*/
+</style>
+</head>
+<body>
+<section class="tBody">
+	<h1 class="title"></h1>
+	<ul id="header">
+		<li class="addPre">
+			<label>名字： <input type="text" name="" id='inp1'/></label>
+			<label>年龄： <input type="text"  id='inp2'/></label>
+			<input type="button" value="添加" id='btn1'/>
+		</li>
+		<li>
+			<span>排序</span>
+			<select id='sel1'>
+				<option value="price">年龄</option>
+				<option value="id">编号</option>
+			</select>
+			<select id='sel2'>
+				<option value='2'>从高到低</option>
+				<option value='1'>从低到高</option>
+			</select>
+			<input type="button" value="提交" />
+			<input type="button" value="批量删除" />
+		</li>
+	</ul>
+	<table id="tab" width="600" align="center" border="1">
+		<thead>
+			<th>全选<input type="checkbox" id="checkAll"></th>
+			<th index="id">编号</th>
+			<th>商品</th>
+			<th index="price">年龄</th>
+			<th>操作</th>
+		</thead>
+		<tbody>
+			<!--<tr>
+				<td><input type="checkbox"></td>
+				<td>1</td>
+				<td>露露</td>
+				<td>12</td>
+				<td>
+					<input type="button" value="删除"/>
+					<input type="button" value="上移">
+					<input type="button" value="下移">
+				</td>
+			</tr>-->
+		</tbody>
+	</table>	
+</section>
+</body>
+<script src="js/jquery-3.2.1.js"></script>
+<script>
+var data = [
+    {
+        'id' : 1,
+        'name' : 'momo',
+        'age' : 36
+    },
+    {
+        'id' : 2,
+        'name' : '小恋',
+        'age' : 40
+    },
+    {
+        'id' : 3,
+        'name' : 'yaya',
+        'age' : 20
+    },
+    {
+        'id' : 4,
+        'name' : 'feifei',
+        'age' : 10
+    },
+    {
+        'id' : 5,
+        'name' : 'hhehe',
+        'age' : 35
+    }
+];
+class tableinit{
+	constructor(){
+		this.num=0;
+		this.str = '';
+		this.init();
+	}
+	init(){
+		//渲染
+		this.show();
+		//添加
+		this.add();
+//		//批量删除
+		this.deletemore()
+//		//排序
+		this.sort()
+///		//变色
+//		this.changecolor();
+	}
+	show(){
+		this.str = '';
+		for(var i=0;i<data.length;i++){
+			this.str+=`<tr>
+				<td><input type="checkbox"></td>
+				<td>${data[i].id}</td>
+				<td>${data[i].name}</td>
+				<td>${data[i].age}</td>
+				<td>
+					<input type="button" value="删除"/>
+					<input type="button" value="上移">
+					<input type="button" value="下移">
+				</td>
+			</tr>`
+		}
+		$('tbody').html(this.str);
+		this.num=0;	
+		this.danxuan();
+		this.action();
+		this.quanxuan();
+	}
+	add(){
+		let _this = this;
+		let newid = data.length;
+		$('#btn1').click(function(){
+			if($('#inp1').val()&&$('#inp2').val()){
+				data.push({
+					id:++newid,
+					name:$('#inp1').val(),
+					age:$('#inp2').val()
+				})
+				_this.show()
+			}else{
+				alert('请输入内容再添加')
+			}
+		})
+	}
+	action(){
+		let _this = this;
+		$('tr input[type=button]').on('click',function(ev){
+			let poId = $(ev.target).parent().prev().prev().prev().html();
+			let newpoId = 0;
+			for(var i=0;i<data.length;i++){
+				if(poId==data[i].id){
+					newpoId = i;
+				}
+			}
+			if($(ev.target).val()=='上移'){
+				if(newpoId==0){
+					return
+				}else{
+					let up = data.splice(newpoId,1);
+					data.splice(newpoId-1,0,up[0]);
+				}
+			}else if($(ev.target).val()=='下移'){
+				let down = data.splice(newpoId,1);
+    			data.splice(newpoId+1,0,down[0]);
+			}else if($(ev.target).val()=='删除'){
+				data.splice(newpoId, 1)
+			}
+			_this.show();
+		})
+	}
+	quanxuan(){
+  		let inputs = $('tbody input[type=checkbox]');
+  	 	if(this.num==inputs.length){
+ 			$('#checkAll').prop('checked',true);
+ 		}else{
+ 			$('#checkAll').prop('checked',false);
+ 		}
+  	}
+	danxuan(){
+	  	let inputs = $('tbody input[type=checkbox]');
+	  	var _this = this;
+	  	for(var i=0;i<inputs.length;i++){
+	  	 	$(inputs[i]).click(function(){ 
+	  	 		if(this.checked){
+	  	 			_this.num++;
+	  	 		}
+	  	 		else{
+	  	 			_this.num--;
+	  	 		}
+	  	 		_this.quanxuan();
+	  	 	})
+	  	}
+	  	$('#checkAll').click(function(){
+	 		if(this.checked){
+	 			for(var i=0;i<inputs.length;i++){
+	  	 			_this.num = data.length;
+	  	 			inputs[i].checked = 'checked';
+	 			}
+	 			_this.quanxuan();
+	 		}else{
+	 			for(var i=0;i<inputs.length;i++){
+	  	 			_this.num = 0;
+	  	 			inputs[i].checked = '';
+	 			}
+	 			_this.quanxuan();
+	 		}
+	  	})
+	}
+	sort(){
+		var _this = this;
+		$('#header').click(function(ev){
+			if($(ev.target).val()=='提交'){
+				if(($('#sel1').val()=='price')&&($('#sel2').val()=='2')){
+					data.sort(function(a,b){
+						return b.age-a.age
+					})
+				}else if(($('#sel1').val()=='price')&&($('#sel2').val()=='1')){
+					data.sort(function(a,b){
+						return a.age-b.age
+					})
+				}else if(($('#sel1').val()=='id')&&($('#sel2').val()=='2')){
+					data.sort(function(a,b){
+						return b.id-a.id
+					})
+				}else{
+					data.sort(function(a,b){
+						return a.id-b.id
+					})
+				}
+				_this.show();
+			}
+		})
+	}
+	deletemore(){
+		var _this = this;
+		$('#header').click(function(ev){
+			if($(ev.target).val()=='批量删除'){
+				let inputs = $('tbody input[type=checkbox]');
+				for(var i=0;i<inputs.length;i++){
+					let inputs = $('tbody input[type=checkbox]');
+	  	 			if($(inputs[i]).prop('checked')){
+			 			_this.num--;
+			 			data.splice(i, 1)
+		  	 			$(inputs[i]).parent().parent().remove();
+		  	 			i--;
+		  	 		}
+	 		}
+			}
+		})
+	}
+}
+new tableinit;
+</script>
+</html>
